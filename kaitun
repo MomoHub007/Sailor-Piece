@@ -1996,18 +1996,37 @@ task.spawn(function()
                     else
                         local isEquipped = false
                         for _, tool in pairs(char:GetChildren()) do
-                            if tool:IsA("Tool") and getToolType(tool.Name) == selectedWeaponType then isEquipped = true; break end
+                            if tool:IsA("Tool") and getToolType(tool.Name) == "Sword" then isEquipped = true; break end
                         end
                         if not isEquipped then
                             for _, tool in pairs(LP.Backpack:GetChildren()) do
-                                if tool:IsA("Tool") and getToolType(tool.Name) == selectedWeaponType then
+                                if tool:IsA("Tool") and getToolType(tool.Name) == "Sword" then
                                     if char:FindFirstChild("Humanoid") then char.Humanoid:EquipTool(tool) end
                                     break
                                 end
                             end
                         end
                     end
+                -- ==========================================
+                -- 🥊 [ เพิ่มระบบสวมใส่หมัด (Melee) ]
+                -- ==========================================
+                elseif selectedWeaponType == "Melee" then
+                    local isEquipped = false
+                    -- เช็คว่าถือหมัดอยู่แล้วหรือยัง
+                    for _, tool in pairs(char:GetChildren()) do
+                        if tool:IsA("Tool") and getToolType(tool.Name) == "Melee" then isEquipped = true; break end
+                    end
+                    -- ถ้ายังไม่ถือ ให้ดึงหมัด(Combat) ออกมาจากกระเป๋า
+                    if not isEquipped then
+                        for _, tool in pairs(LP.Backpack:GetChildren()) do
+                            if tool:IsA("Tool") and getToolType(tool.Name) == "Melee" then
+                                if char:FindFirstChild("Humanoid") then char.Humanoid:EquipTool(tool) end
+                                break
+                            end
+                        end
+                    end
                 end
+                -- ==========================================
             end
 
         else
