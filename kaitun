@@ -1209,20 +1209,26 @@ task.spawn(function()
                                 
                                 local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                 if prompt then
-                                    pcall(function() fireproximityprompt(prompt) end)
+                                    -- สั่งให้กด E รัวๆ สแปม 5 ครั้ง
+                                    for i = 1, 5 do
+                                        pcall(function() fireproximityprompt(prompt) end)
+                                        task.wait(0.3)
+                                    end
                                     task.wait(1.5) -- รอเซิร์ฟเวอร์ตอบสนอง
                                     
-                                    -- 3. ตรวจสอบว่าได้ Katana มาหรือยัง (ในกระเป๋า/ที่ถือ/ในคลัง)
+                                    -- 3. ตรวจสอบว่าได้ Katana มาหรือยัง
                                     local checkKatana = (LP.Backpack and LP.Backpack:FindFirstChild("Katana")) or (char and char:FindFirstChild("Katana")) or hasItemInStorage("Katana")
                                     if checkKatana then
                                         pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Katana") end)
                                         task.wait(1)
-                                        -- ถ้าซื้อสำเร็จ ระบบจะหลุดเงื่อนไขนี้และไปฟาร์มต่อเอง
+                                    else
+                                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Katana ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
                                     end
                                 end
                             end
                         end
                     end
+                    continue -- วนลูปซื้อใหม่จนกว่าจะได้ดาบ
                 end
             else
                 -- ===== STEP 2: มีดาบแล้ว → ฟาร์มด้วยดาบ =====
@@ -1282,8 +1288,12 @@ task.spawn(function()
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        pcall(function() fireproximityprompt(prompt) end)
-                                        task.wait(1.5)
+                                        -- 💡 แก้ไขใหม่: สั่งให้กด E รัวๆ สแปม 5 ครั้ง
+                                        for i = 1, 5 do
+                                            pcall(function() fireproximityprompt(prompt) end)
+                                            task.wait(0.3)
+                                        end
+                                        task.wait(1.5) -- รอของเข้าตัว
                                         
                                         -- เช็คว่าซื้อสำเร็จไหม
                                         local checkGryphon = (LP.Backpack and LP.Backpack:FindFirstChild("Gryphon")) or (char and char:FindFirstChild("Gryphon")) or hasItemInStorage("Gryphon")
@@ -1291,12 +1301,15 @@ task.spawn(function()
                                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Gryphon") end)
                                             task.wait(1)
                                             _G.KaitunPhase = "farmLevel" -- สำเร็จแล้วถึงจะยอมให้ไปฟาร์มต่อ
+                                        else
+                                            -- ถ้าซื้อไม่ติด แจ้งเตือนเดี๋ยวสคริปต์วนกลับมาทำใหม่
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Gryphon ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
                                         end
                                     end
                                 end
                             end
                         end
-                        return -- หยุดตรงนี้เพื่อบังคับให้มันลูบซื้อจนกว่าจะได้ดาบ
+                        continue -- วนลูปกลับไปซื้อใหม่โดยไม่พัง!
                     end
 
                     -- 3. ถ้าไม่มี Gryphon และเงินยังไม่พอซื้อ Gryphon ถึงจะอนุญาตให้สคริปต์มาเช็ค/ใช้/ซื้อ Dark Blade แทน
@@ -1335,7 +1348,11 @@ task.spawn(function()
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        pcall(function() fireproximityprompt(prompt) end)
+                                        -- สแปม 5 ครั้ง
+                                        for i = 1, 5 do
+                                            pcall(function() fireproximityprompt(prompt) end)
+                                            task.wait(0.3)
+                                        end
                                         task.wait(1.5)
                                         
                                         -- เช็คว่าซื้อสำเร็จไหม
@@ -1344,12 +1361,14 @@ task.spawn(function()
                                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Dark Blade") end)
                                             task.wait(1)
                                             _G.KaitunPhase = "farmLevel"
+                                        else
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Dark Blade ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
                                         end
                                     end
                                 end
                             end
                         end
-                        return -- บังคับวนลูปซื้อจนกว่าจะได้ดาบ
+                        continue -- บังคับวนลูปซื้อจนกว่าจะได้ดาบ
                     end
                 end
             end
