@@ -1217,10 +1217,21 @@ task.spawn(function()
                                 
                                 local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                 if prompt then
-                                    -- 3. กด E ค้าง
+                                    -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
+                                    local VIM = game:GetService("VirtualInputManager")
                                     local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
-                                    pcall(function() fireproximityprompt(prompt) end)
-                                    task.wait(holdTime + 1)
+                                    
+                                    -- สั่งกดปุ่ม E ลง (ค้างไว้)
+                                    VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                                    
+                                    -- รอเวลาตามหลอดของเกม
+                                    task.wait(holdTime + 0.5)
+                                    
+                                    -- สั่งปล่อยปุ่ม E
+                                    VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                                    
+                                    -- รอของเข้าตัวนิดนึง
+                                    task.wait(1)
                                     
                                     -- เช็คว่าได้ดาบมาหรือยัง
                                     local checkKatana = (LP.Backpack and LP.Backpack:FindFirstChild("Katana")) or (char and char:FindFirstChild("Katana")) or hasItemInStorage("Katana")
@@ -1304,17 +1315,26 @@ task.spawn(function()
                                     root.Anchored = false
                                     hum.PlatformStand = false
                                     root.Velocity = Vector3.new(0, 0, 0) -- เบรกตัวละครให้หยุดสนิท
-                                    char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 3))
-                                    task.wait(0.5) -- รอให้ตัวละครยืนนิ่งๆ นานขึ้นอีกนิด
+                                    char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 1))
+                                    task.wait(2) -- รอให้ตัวละครยืนนิ่งๆ นานขึ้นอีกนิด
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- 3. กด E ค้าง (ดึงเวลา HoldDuration จากในเกมมาใช้จำลองการกดค้าง)
+                                        -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
+                                        local VIM = game:GetService("VirtualInputManager")
                                         local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
-                                        pcall(function() fireproximityprompt(prompt) end)
                                         
-                                        -- รอจนกว่าหลอด E จะเต็ม + เผื่อเวลาดีเลย์เซิร์ฟเวอร์
-                                        task.wait(holdTime + 1) 
+                                        -- สั่งกดปุ่ม E ลง (ค้างไว้)
+                                        VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                                        
+                                        -- รอเวลาตามหลอดของเกม
+                                        task.wait(holdTime + 0.5)
+                                        
+                                        -- สั่งปล่อยปุ่ม E
+                                        VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                                        
+                                        -- รอของเข้าตัวนิดนึง
+                                        task.wait(1)
                                         
                                         -- เช็คว่าได้ดาบมาหรือยัง
                                         local checkGryphon = (LP.Backpack and LP.Backpack:FindFirstChild("Gryphon")) or (char and char:FindFirstChild("Gryphon")) or hasItemInStorage("Gryphon")
@@ -1381,15 +1401,26 @@ task.spawn(function()
                                     root.Anchored = false
                                     hum.PlatformStand = false
                                     root.Velocity = Vector3.new(0, 0, 0)
-                                    char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 3))
-                                    task.wait(0.5)
+                                    char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 1))
+                                    task.wait(2)
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- 3. กด E ค้าง
+                                        -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
+                                        local VIM = game:GetService("VirtualInputManager")
                                         local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
-                                        pcall(function() fireproximityprompt(prompt) end)
-                                        task.wait(holdTime + 1)
+                                        
+                                        -- สั่งกดปุ่ม E ลง (ค้างไว้)
+                                        VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                                        
+                                        -- รอเวลาตามหลอดของเกม
+                                        task.wait(holdTime + 0.5)
+                                        
+                                        -- สั่งปล่อยปุ่ม E
+                                        VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                                        
+                                        -- รอของเข้าตัวนิดนึง
+                                        task.wait(1)
                                         
                                         -- เช็คผลการซื้อ
                                         local checkDarkBlade = (LP.Backpack and LP.Backpack:FindFirstChild("Dark Blade")) or (char and char:FindFirstChild("Dark Blade")) or hasItemInStorage("Dark Blade")
