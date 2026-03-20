@@ -1217,21 +1217,12 @@ task.spawn(function()
                                 
                                 local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                 if prompt then
-                                    -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
-                                    local VIM = game:GetService("VirtualInputManager")
-                                    local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
-                                    
-                                    -- สั่งกดปุ่ม E ลง (ค้างไว้)
-                                    VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-                                    
-                                    -- รอเวลาตามหลอดของเกม
-                                    task.wait(holdTime + 0.5)
-                                    
-                                    -- สั่งปล่อยปุ่ม E
-                                    VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-                                    
-                                    -- รอของเข้าตัวนิดนึง
-                                    task.wait(1)
+                                    -- 3. กด E รัวๆ 10 ครั้ง (สแปม)
+                                    for i = 1, 10 do
+                                        pcall(function() fireproximityprompt(prompt) end)
+                                        task.wait(0.1)
+                                    end
+                                    task.wait(1.5) -- รอเซิร์ฟเวอร์ตอบสนอง
                                     
                                     -- เช็คว่าได้ดาบมาหรือยัง
                                     local checkKatana = (LP.Backpack and LP.Backpack:FindFirstChild("Katana")) or (char and char:FindFirstChild("Katana")) or hasItemInStorage("Katana")
@@ -1320,35 +1311,34 @@ task.spawn(function()
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
+                                        -- 3. ใช้ VIM จำลองการกดคีย์บอร์ด E ค้างไว้ 3 วินาที
                                         local VIM = game:GetService("VirtualInputManager")
-                                        local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
                                         
                                         -- สั่งกดปุ่ม E ลง (ค้างไว้)
                                         VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
                                         
-                                        -- รอเวลาตามหลอดของเกม
-                                        task.wait(holdTime + 0.5)
+                                        -- หน่วงเวลา 3.5 วินาที (เผื่อเวลาหลอดเต็ม 3 วิ + ดีเลย์เซิร์ฟเวอร์ 0.5 วิ)
+                                        task.wait(3.5) 
                                         
                                         -- สั่งปล่อยปุ่ม E
                                         VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
                                         
-                                        -- รอของเข้าตัวนิดนึง
-                                        task.wait(1)
+                                        -- รอระบบเอาของเข้าตัว
+                                        task.wait(1.5) 
                                         
                                         -- เช็คว่าได้ดาบมาหรือยัง
                                         local checkGryphon = (LP.Backpack and LP.Backpack:FindFirstChild("Gryphon")) or (char and char:FindFirstChild("Gryphon")) or hasItemInStorage("Gryphon")
                                         if checkGryphon then
                                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Gryphon") end)
                                             task.wait(1)
-                                            _G.KaitunPhase = "farmLevel"
                                             
+                                            _G.KaitunPhase = "farmLevel"
                                             -- 4. ซื้อสำเร็จแล้ว ค่อยเปิดฟาร์มให้กลับมาทำงานต่อ
                                             MoMoConfig.AutoFarm = true
                                             if ToggleAutoFarm then setToggle(ToggleAutoFarm, true) end
                                             pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "✅ ซื้อ Gryphon สำเร็จ! กลับไปฟาร์มต่อ", Time = 3}) end)
                                         else
-                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ กำลังพยายามกดซื้อใหม่...", Time = 2}) end)
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Gryphon ไม่ติด กำลังพยายามกดซื้อใหม่...", Time = 2}) end)
                                         end
                                     end
                                 end
@@ -1406,21 +1396,12 @@ task.spawn(function()
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- 3. จำลองการกดปุ่ม E บนคีย์บอร์ดจริงๆ (Virtual Input)
-                                        local VIM = game:GetService("VirtualInputManager")
-                                        local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
-                                        
-                                        -- สั่งกดปุ่ม E ลง (ค้างไว้)
-                                        VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-                                        
-                                        -- รอเวลาตามหลอดของเกม
-                                        task.wait(holdTime + 0.5)
-                                        
-                                        -- สั่งปล่อยปุ่ม E
-                                        VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-                                        
-                                        -- รอของเข้าตัวนิดนึง
-                                        task.wait(1)
+                                        -- 3. กด E รัวๆ 10 ครั้ง (สแปม)
+                                        for i = 1, 10 do
+                                            pcall(function() fireproximityprompt(prompt) end)
+                                            task.wait(0.1)
+                                        end
+                                        task.wait(1.5) -- รอเซิร์ฟเวอร์ตอบสนอง
                                         
                                         -- เช็คผลการซื้อ
                                         local checkDarkBlade = (LP.Backpack and LP.Backpack:FindFirstChild("Dark Blade")) or (char and char:FindFirstChild("Dark Blade")) or hasItemInStorage("Dark Blade")
