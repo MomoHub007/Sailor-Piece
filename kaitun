@@ -1181,54 +1181,66 @@ task.spawn(function()
                         pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚔️ Farming Money for Katana (2500)", Time = 5}) end)
                     end
                 else
-                    MoMoConfig.AutoFarm = false
-                    if ToggleAutoFarm then setToggle(ToggleAutoFarm, false) end
-                    
+                    -- ==========================================
+                    -- 🗡️ [ ระบบซื้อ Katana แบบใหม่ ]
+                    -- ==========================================
                     if _G.KaitunPhase ~= "buyKatana" then
+                        -- 1. ปิดฟาร์มชั่วคราว
+                        MoMoConfig.AutoFarm = false
+                        if ToggleAutoFarm then setToggle(ToggleAutoFarm, false) end
+                        _G.TargetMob = nil
+                        
                         pcall(function() RS:WaitForChild("Remotes"):WaitForChild("TeleportToPortal"):FireServer("Starter") end)
                         task.wait(3)
                         _G.KaitunPhase = "buyKatana"
-                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🗡️ Buying Katana...", Time = 5}) end)
+                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🗡️ Stopping Farm to Buy Katana...", Time = 5}) end)
                     end
                     
                     local npc = workspace:FindFirstChild("ServiceNPCs") and workspace.ServiceNPCs:FindFirstChild("Katana")
                     if npc then
                         local root = char and char:FindFirstChild("HumanoidRootPart")
+                        local hum = char and char:FindFirstChild("Humanoid")
                         local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart or npc:FindFirstChildWhichIsA("BasePart", true)
-                        if root and npcPart then
+                        
+                        if root and npcPart and hum then
                             local dist = (root.Position - npcPart.Position).Magnitude
-                            -- 1. บีบระยะให้เข้ามาใกล้ขึ้น (จาก 15 เหลือ 8)
                             if dist > 8 then
                                 SafeBypassWarp(npcPart.Position + Vector3.new(0, 3, 0), npcPart.Position)
                                 task.wait(0.5)
                             else
-                                -- 2. ปลดล็อคตัวละครและไปยืนหน้า NPC
+                                -- 2. ปลด Freeze
                                 root.Anchored = false
+                                hum.PlatformStand = false
+                                root.Velocity = Vector3.new(0, 0, 0)
                                 char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 3))
-                                task.wait(0.2)
+                                task.wait(0.5)
                                 
                                 local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                 if prompt then
-                                    -- สั่งให้กด E รัวๆ สแปม 5 ครั้ง
-                                    for i = 1, 5 do
-                                        pcall(function() fireproximityprompt(prompt) end)
-                                        task.wait(0.3)
-                                    end
-                                    task.wait(1.5) -- รอเซิร์ฟเวอร์ตอบสนอง
+                                    -- 3. กด E ค้าง
+                                    local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
+                                    pcall(function() fireproximityprompt(prompt) end)
+                                    task.wait(holdTime + 1)
                                     
-                                    -- 3. ตรวจสอบว่าได้ Katana มาหรือยัง
+                                    -- เช็คว่าได้ดาบมาหรือยัง
                                     local checkKatana = (LP.Backpack and LP.Backpack:FindFirstChild("Katana")) or (char and char:FindFirstChild("Katana")) or hasItemInStorage("Katana")
                                     if checkKatana then
                                         pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Katana") end)
                                         task.wait(1)
+                                        
+                                        -- 4. ซื้อสำเร็จแล้ว เปิดฟาร์มต่อได้
+                                        _G.KaitunPhase = "farmLevel"
+                                        MoMoConfig.AutoFarm = true
+                                        if ToggleAutoFarm then setToggle(ToggleAutoFarm, true) end
+                                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "✅ ซื้อ Katana สำเร็จ! เริ่มฟาร์มด้วยดาบ", Time = 3}) end)
                                     else
-                                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Katana ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
+                                        pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ กำลังพยายามกดซื้อ Katana ใหม่...", Time = 2}) end)
                                     end
                                 end
                             end
                         end
                     end
-                    continue -- วนลูปซื้อใหม่จนกว่าจะได้ดาบ
+                    continue -- วนลูปซื้อจนกว่าจะได้ดาบ
                 end
             else
                 -- ===== STEP 2: มีดาบแล้ว → ฟาร์มด้วยดาบ =====
@@ -1264,52 +1276,65 @@ task.spawn(function()
                     -- ถ้าไม่มี เช็คเงิน 6.5M และ Gem 650
                     if moneyValue >= 6500000 and gemsValue >= 650 then
                         if _G.KaitunPhase ~= "buyGryphon" then
-                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🦅 Buying Gryphon Sword...", Time = 5}) end)
-                            -- วาปไป Shibuya
+                            -- 1. ยกเลิกการฟาร์ม และเคลียร์เป้าหมายมอนสเตอร์ทิ้งทันที
+                            MoMoConfig.AutoFarm = false
+                            if ToggleAutoFarm then setToggle(ToggleAutoFarm, false) end
+                            _G.TargetMob = nil
+                            
+                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🦅 Stopping Farm to Buy Gryphon...", Time = 5}) end)
                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("TeleportToPortal"):FireServer("Shibuya") end)
                             task.wait(3)
                             _G.KaitunPhase = "buyGryphon"
                         end
                         
-                        -- เดินหา NPC Gryphon
+                        -- เดินหา NPC
                         local npc = workspace:FindFirstChild("ServiceNPCs") and workspace.ServiceNPCs:FindFirstChild("GryphonBuyerNPC")
                         if npc then
                             local root = char and char:FindFirstChild("HumanoidRootPart")
+                            local hum = char and char:FindFirstChild("Humanoid")
                             local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart or npc:FindFirstChildWhichIsA("BasePart", true)
-                            if root and npcPart then
+                            
+                            if root and npcPart and hum then
                                 local dist = (root.Position - npcPart.Position).Magnitude
                                 if dist > 8 then
                                     SafeBypassWarp(npcPart.Position + Vector3.new(0, 3, 0), npcPart.Position)
                                     task.wait(0.5)
                                 else
+                                    -- 2. ยกเลิกการ Freeze (ปลด Anchored และ PlatformStand)
                                     root.Anchored = false
+                                    hum.PlatformStand = false
+                                    root.Velocity = Vector3.new(0, 0, 0) -- เบรกตัวละครให้หยุดสนิท
                                     char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 3))
-                                    task.wait(0.2)
+                                    task.wait(0.5) -- รอให้ตัวละครยืนนิ่งๆ นานขึ้นอีกนิด
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- 💡 แก้ไขใหม่: สั่งให้กด E รัวๆ สแปม 5 ครั้ง
-                                        for i = 1, 5 do
-                                            pcall(function() fireproximityprompt(prompt) end)
-                                            task.wait(0.3)
-                                        end
-                                        task.wait(1.5) -- รอของเข้าตัว
+                                        -- 3. กด E ค้าง (ดึงเวลา HoldDuration จากในเกมมาใช้จำลองการกดค้าง)
+                                        local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
+                                        pcall(function() fireproximityprompt(prompt) end)
                                         
-                                        -- เช็คว่าซื้อสำเร็จไหม
+                                        -- รอจนกว่าหลอด E จะเต็ม + เผื่อเวลาดีเลย์เซิร์ฟเวอร์
+                                        task.wait(holdTime + 1) 
+                                        
+                                        -- เช็คว่าได้ดาบมาหรือยัง
                                         local checkGryphon = (LP.Backpack and LP.Backpack:FindFirstChild("Gryphon")) or (char and char:FindFirstChild("Gryphon")) or hasItemInStorage("Gryphon")
                                         if checkGryphon then
                                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Gryphon") end)
                                             task.wait(1)
-                                            _G.KaitunPhase = "farmLevel" -- สำเร็จแล้วถึงจะยอมให้ไปฟาร์มต่อ
+                                            _G.KaitunPhase = "farmLevel"
+                                            
+                                            -- 4. ซื้อสำเร็จแล้ว ค่อยเปิดฟาร์มให้กลับมาทำงานต่อ
+                                            MoMoConfig.AutoFarm = true
+                                            if ToggleAutoFarm then setToggle(ToggleAutoFarm, true) end
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "✅ ซื้อ Gryphon สำเร็จ! กลับไปฟาร์มต่อ", Time = 3}) end)
                                         else
-                                            -- ถ้าซื้อไม่ติด แจ้งเตือนเดี๋ยวสคริปต์วนกลับมาทำใหม่
-                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Gryphon ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ กำลังพยายามกดซื้อใหม่...", Time = 2}) end)
                                         end
                                     end
                                 end
                             end
                         end
-                        continue -- วนลูปกลับไปซื้อใหม่โดยไม่พัง!
+                        continue -- วนลูปขั้นตอนนี้ซ้ำจนกว่าจะได้ดาบ
                     end
 
                     -- 3. ถ้าไม่มี Gryphon และเงินยังไม่พอซื้อ Gryphon ถึงจะอนุญาตให้สคริปต์มาเช็ค/ใช้/ซื้อ Dark Blade แทน
@@ -1325,8 +1350,16 @@ task.spawn(function()
                     -- ถ้าไม่มี Dark Blade → เช็คว่ามี Katana + เงิน/Gem พอซื้อไหม
                     local hasKatana = (LP.Backpack and LP.Backpack:FindFirstChild("Katana")) or (char and char:FindFirstChild("Katana")) or hasItemInStorage("Katana")
                     if hasKatana and moneyValue >= 250000 and gemsValue >= 150 then
+                        -- ==========================================
+                        -- 🉐 [ ระบบซื้อ Dark Blade แบบใหม่ ]
+                        -- ==========================================
                         if _G.KaitunPhase ~= "buyDarkBlade" then
-                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🉐 Buying Dark Blade...", Time = 5}) end)
+                            -- 1. ปิดฟาร์มชั่วคราว
+                            MoMoConfig.AutoFarm = false
+                            if ToggleAutoFarm then setToggle(ToggleAutoFarm, false) end
+                            _G.TargetMob = nil
+                            
+                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "🉐 Stopping Farm to Buy Dark Blade...", Time = 5}) end)
                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("TeleportToPortal"):FireServer("Snow") end)
                             task.wait(3)
                             _G.KaitunPhase = "buyDarkBlade"
@@ -1335,40 +1368,48 @@ task.spawn(function()
                         local npc = workspace:FindFirstChild("ServiceNPCs") and workspace.ServiceNPCs:FindFirstChild("DarkBladeNPC")
                         if npc then
                             local root = char and char:FindFirstChild("HumanoidRootPart")
+                            local hum = char and char:FindFirstChild("Humanoid")
                             local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart or npc:FindFirstChildWhichIsA("BasePart", true)
-                            if root and npcPart then
+                            
+                            if root and npcPart and hum then
                                 local dist = (root.Position - npcPart.Position).Magnitude
                                 if dist > 8 then
                                     SafeBypassWarp(npcPart.Position + Vector3.new(0, 3, 0), npcPart.Position)
                                     task.wait(0.5)
                                 else
+                                    -- 2. ปลด Freeze
                                     root.Anchored = false
+                                    hum.PlatformStand = false
+                                    root.Velocity = Vector3.new(0, 0, 0)
                                     char:PivotTo(npcPart.CFrame * CFrame.new(0, 0, 3))
-                                    task.wait(0.2)
+                                    task.wait(0.5)
                                     
                                     local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
                                     if prompt then
-                                        -- สแปม 5 ครั้ง
-                                        for i = 1, 5 do
-                                            pcall(function() fireproximityprompt(prompt) end)
-                                            task.wait(0.3)
-                                        end
-                                        task.wait(1.5)
+                                        -- 3. กด E ค้าง
+                                        local holdTime = prompt.HoldDuration > 0 and prompt.HoldDuration or 0.5
+                                        pcall(function() fireproximityprompt(prompt) end)
+                                        task.wait(holdTime + 1)
                                         
-                                        -- เช็คว่าซื้อสำเร็จไหม
+                                        -- เช็คผลการซื้อ
                                         local checkDarkBlade = (LP.Backpack and LP.Backpack:FindFirstChild("Dark Blade")) or (char and char:FindFirstChild("Dark Blade")) or hasItemInStorage("Dark Blade")
                                         if checkDarkBlade then
                                             pcall(function() RS:WaitForChild("Remotes"):WaitForChild("EquipWeapon"):FireServer("Equip", "Dark Blade") end)
                                             task.wait(1)
+                                            
+                                            -- 4. ซื้อสำเร็จแล้ว เปิดฟาร์มต่อ
                                             _G.KaitunPhase = "farmLevel"
+                                            MoMoConfig.AutoFarm = true
+                                            if ToggleAutoFarm then setToggle(ToggleAutoFarm, true) end
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "✅ ซื้อ Dark Blade สำเร็จ! กลับไปฟาร์มต่อ", Time = 3}) end)
                                         else
-                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ ซื้อ Dark Blade ไม่สำเร็จ กำลังลองใหม่...", Time = 3}) end)
+                                            pcall(function() Window:Notify({Title = "Auto Kaitun", Desc = "⚠️ กำลังพยายามกดซื้อ Dark Blade ใหม่...", Time = 2}) end)
                                         end
                                     end
                                 end
                             end
                         end
-                        continue -- บังคับวนลูปซื้อจนกว่าจะได้ดาบ
+                        continue -- วนลูปจนกว่าจะได้ของ
                     end
                 end
             end
